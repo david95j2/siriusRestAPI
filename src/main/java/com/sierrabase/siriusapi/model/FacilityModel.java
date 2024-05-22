@@ -31,6 +31,6 @@ public class FacilityModel {
         setDescription(entity.getFacility_description());
         setThumbnailUrl(entity.getFacility_thumbnail_url());
         setCreatedDatetime(entity.getCreated_datetime());
-        setWrDatetime(entity.getWr_datetime());
+//        setWrDatetime(entity.getWr_datetime());
     }
 }
