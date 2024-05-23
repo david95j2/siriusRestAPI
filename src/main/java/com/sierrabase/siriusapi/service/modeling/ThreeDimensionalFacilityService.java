@@ -20,8 +20,9 @@ public class ThreeDimensionalFacilityService {
     @Autowired
     private ThreeDimensionalFacilityRepository threeDimensionalFacilityRepository;
 
-    public ArrayList<ThreeDimensionalFacilityModel> getAllEntities(Integer id)  {
-        List<ThreeDimensionalFacilityEntity> entities = threeDimensionalFacilityRepository.findAllByAlbumId(id);
+    public ArrayList<ThreeDimensionalFacilityModel> getAllEntities(Integer albumId)  {
+
+        List<ThreeDimensionalFacilityEntity> entities = threeDimensionalFacilityRepository.findAllByAlbumId(albumId);
         if(entities.size() <= 0)
             return null;
 

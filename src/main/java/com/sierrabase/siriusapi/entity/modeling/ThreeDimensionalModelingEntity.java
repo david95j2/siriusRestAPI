@@ -38,7 +38,7 @@ public class ThreeDimensionalModelingEntity {
     private ZonedDateTime wr_datetime;
 
     public ThreeDimensionalModelingEntity(final ThreeDimensionalModelingModel model) {
-        setThree_dimensional_modeling_id(model.getThreeDimensionalModelingId());
+        setThree_dimensional_modeling_id(model.getId());
         setAlbum_id(model.getAlbumId());
         setName(model.getName());
         setTable_name(model.getTableName());

@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Data
 public class ThreeDimensionalModelingModel {
-    private int threeDimensionalModelingId;
+    private int id;
     private int albumId;
     private String name;
     private String tableName;
@@ -24,7 +24,7 @@ public class ThreeDimensionalModelingModel {
     private ZonedDateTime wrDatetime;
 
     public ThreeDimensionalModelingModel(final ThreeDimensionalModelingEntity entity) {
-        setThreeDimensionalModelingId(entity.getThree_dimensional_modeling_id());
+        setId(entity.getThree_dimensional_modeling_id());
         setAlbumId(entity.getAlbum_id());
         setName(entity.getName());
         setTableName(entity.getTable_name());

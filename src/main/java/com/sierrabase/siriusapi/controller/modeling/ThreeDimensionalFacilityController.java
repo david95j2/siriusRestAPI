@@ -2,13 +2,9 @@ package com.sierrabase.siriusapi.controller.modeling;
 
 import com.sierrabase.siriusapi.common.URIParser;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
-import com.sierrabase.siriusapi.model.SourceInfoModel;
+
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModelingModel;
-import com.sierrabase.siriusapi.service.album.ModelingService;
 import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityService;
-import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalModelingService;
-import com.sierrabase.siriusapi.service.worker.WorkerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +29,7 @@ public class ThreeDimensionalFacilityController {
     }
 
 
-    private int a_id, m_id, mo_id;
+    private int a_id, m_id, m_m_id;
 
     private boolean parsePathVariablesOfAlbum(String albumId) {
         a_id = URIParser.parseStringToIntegerId(albumId);
@@ -55,9 +51,9 @@ public class ThreeDimensionalFacilityController {
         if(!parsePathVariablesOfModeling(albumId, modelingId))
             return false;
 
-        mo_id = URIParser.parseStringToIntegerId(modelId);
+        m_m_id = URIParser.parseStringToIntegerId(modelId);
 
-        if(mo_id < 0)
+        if(m_m_id < 0)
             return false;
 
         return true;
@@ -69,7 +65,7 @@ public class ThreeDimensionalFacilityController {
 
     // GET - a facility
     @GetMapping(uri_models)
-    public ResponseEntity<?> getThreeDimensionalFacility(
+    public ResponseEntity<?> getThreeDimensionalFacilities(
             @PathVariable String album_id,
             @PathVariable String modeling_id)
     {
@@ -96,7 +92,7 @@ public class ThreeDimensionalFacilityController {
         if(!parsePathVariablesOfModel(album_id,modeling_id,model_id))
             return ResponseEntity.badRequest().build();
 
-        ThreeDimensionalFacilityModel model = threeDimensionalFacilityService.getEntityById(m_id);
+        ThreeDimensionalFacilityModel model = threeDimensionalFacilityService.getEntityById(m_m_id);
 //        log.info("model: " + facility);
         ResponseDTO<ThreeDimensionalFacilityModel> response = ResponseDTO.<ThreeDimensionalFacilityModel>builder()
                 .uri(getUri(uri_model))
