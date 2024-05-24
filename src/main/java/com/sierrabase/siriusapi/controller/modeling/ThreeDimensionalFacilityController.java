@@ -3,6 +3,7 @@ package com.sierrabase.siriusapi.controller.modeling;
 import com.sierrabase.siriusapi.common.URIParser;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
 
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
 import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ public class ThreeDimensionalFacilityController {
 
     static private final String uri_models = uri_modeling + "/model";
     static private final String uri_model = uri_models + "/{model_id}";
+
+    static private final String uri_model_capture = uri_model + "/capture";
 
     private String getUri(final String methodName) {
         return apiTag + methodName;
@@ -63,7 +66,7 @@ public class ThreeDimensionalFacilityController {
     @Autowired
     private ThreeDimensionalFacilityService threeDimensionalFacilityService;
 
-    // GET - a facility
+    // GET - 3D Models
     @GetMapping(uri_models)
     public ResponseEntity<?> getThreeDimensionalFacilities(
             @PathVariable String album_id,
@@ -83,6 +86,7 @@ public class ThreeDimensionalFacilityController {
         return ResponseEntity.ok().body(response);
     }
 
+    // GET - a 3d model
     @GetMapping(uri_model)
     public ResponseEntity<?> getThreeDimensionalFacilityById(
             @PathVariable String album_id,
@@ -103,4 +107,24 @@ public class ThreeDimensionalFacilityController {
         return ResponseEntity.ok().body(response);
     }
 
+    // POST - Capture of the 3d model
+    @PostMapping(uri_model_capture)
+    public ResponseEntity<?> captureThreeDimensionalFacility(
+            @PathVariable String album_id,
+            @PathVariable String modeling_id,
+            @PathVariable String model_id,
+            @RequestBody ThreeDimensionalFacilityInfoModel model) {
+        if(!parsePathVariablesOfModel(album_id,modeling_id,model_id))
+            return ResponseEntity.badRequest().build();
+        log.info("capture model :"+model);
+        Boolean result = threeDimensionalFacilityService.captureThreeDimensionalFacility(a_id,model);
+
+        ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
+                .uri(getUri(uri_model_capture))
+                .success(result)
+                .result(result)
+                .build();
+
+        return ResponseEntity.ok().body(response);
+    }
 }

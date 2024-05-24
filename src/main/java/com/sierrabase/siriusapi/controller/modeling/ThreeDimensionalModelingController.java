@@ -1,6 +1,9 @@
 package com.sierrabase.siriusapi.controller.modeling;
 
+import com.sierrabase.siriusapi.common.URICreator;
 import com.sierrabase.siriusapi.common.URIParser;
+import com.sierrabase.siriusapi.config.FtpConfig;
+import com.sierrabase.siriusapi.dto.ResponseCodeDTO;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
 import com.sierrabase.siriusapi.model.FacilityModel;
 import com.sierrabase.siriusapi.model.SourceInfoModel;
@@ -13,9 +16,12 @@ import com.sierrabase.siriusapi.service.worker.WorkerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 @Slf4j
@@ -31,7 +37,8 @@ public class ThreeDimensionalModelingController {
         return apiTag + methodName;
     }
 
-
+    @Autowired
+    private FtpConfig ftpConfig;
     private int a_id, m_id;
 
     private boolean parsePathVariablesOfAlbum(String albumId) {
@@ -51,14 +58,10 @@ public class ThreeDimensionalModelingController {
     }
 
 
-
-    @Autowired
-    private WorkerService workerService;
-    @Autowired
-    private ModelingService modelingService;
     @Autowired
     private ThreeDimensionalModelingService threeDimensionalModelingService;
-
+    @Autowired
+    private ThreeDimensionalFacilityService threeDimensionalFacilityService;
     // GET - a facility
     @GetMapping(uri_modelings)
     public ResponseEntity<?> getModelings(
@@ -97,7 +100,7 @@ public class ThreeDimensionalModelingController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping(uri_modeling)
+    @PostMapping(uri_modelings)
     public ResponseEntity<?> webhookListener(
             @PathVariable String album_id,
             @RequestBody SourceInfoModel model) {
@@ -106,12 +109,41 @@ public class ThreeDimensionalModelingController {
             ResponseEntity.badRequest().build();
         }
 
-        boolean result = modelingService.importModel(a_id,model);
+        boolean result = threeDimensionalModelingService.importModel(a_id,model);
 
+        ThreeDimensionalModelingModel modelingModel = new ThreeDimensionalModelingModel();
+        modelingModel.setAlbumId(a_id);
+        modelingModel.setName("import model");
+        modelingModel.setType(1);
+        modelingModel.setTypeName("glb");
+        modelingModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
+        if (!result) {
+            modelingModel.setStatus("Server Error");
+            threeDimensionalModelingService.createEntity(modelingModel);
+            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not import 3D model"));
+        }
+        modelingModel.setStatus("Completed");
+        ThreeDimensionalModelingModel createdModelingModel = threeDimensionalModelingService.createEntity(modelingModel);
+        if (createdModelingModel == null) {
+            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create modeling"));
+        }
 
+        ThreeDimensionalFacilityModel facilityModel = new ThreeDimensionalFacilityModel();
+        facilityModel.setThreeDimensionalModelingId(createdModelingModel.getId());
+        facilityModel.setAlbumId(a_id);
+        facilityModel.setType(1);
+        facilityModel.setTypeName("down sampled");
+        System.out.println(ftpConfig.getNginxUri()+"/"+URICreator.pathToString("album",String.valueOf(a_id),"3D_modeling/downsampled_model.glb"));
+        facilityModel.setThreeDimensionalFacilityUrl(ftpConfig.getNginxUri()+"/"+URICreator.pathToString("album",String.valueOf(a_id),"3D_modeling/downsampled_model.glb"));
+        facilityModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
+        ThreeDimensionalFacilityModel createdFacilityModel = threeDimensionalFacilityService.createEntity(facilityModel);
+        log.info("create 3d facility : "+createdFacilityModel);
+        if (createdFacilityModel == null) {
+            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create model"));
+        }
 
         ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
-                .uri(getUri(uri_modeling))
+                .uri(getUri(uri_modelings))
 //                .success(modelList != null)
 //                .result(modelList)
                 .build();

@@ -46,4 +46,38 @@ public class ThreeDimensionalFacilityInfoModel {
         setName(entity.getName());
         setCreatedDatetime(entity.getCreated_datetime());
     }
+
+
+    public String rotationToString() {
+        return String.valueOf(rotation);
+    }
+
+    public String minHeightToString() {
+        return String.valueOf(minHeight);
+    }
+
+    public String maxHeightToString() {
+        return String.valueOf(maxHeight);
+    }
+
+    public String minWidthToString() {
+        return String.valueOf(minWidth);
+    }
+
+    public String maxWidthToString() {
+        return String.valueOf(maxWidth);
+    }
+
+    public String minDepthToString() {
+        return String.valueOf(minDepth);
+    }
+
+    public String maxDepthToString() {
+        return String.valueOf(maxDepth);
+    }
+
+    public String verticalToString() {
+        return String.valueOf(vertical);
+    }
+
 }

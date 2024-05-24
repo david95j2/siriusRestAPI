@@ -1,15 +1,16 @@
 package com.sierrabase.siriusapi.service.modeling;
 
+import com.sierrabase.siriusapi.common.URICreator;
 import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityEntity;
-import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalModelingEntity;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModelingModel;
 import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalFacilityRepository;
-import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalModelingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,11 @@ import java.util.Optional;
 public class ThreeDimensionalFacilityService {
     @Autowired
     private ThreeDimensionalFacilityRepository threeDimensionalFacilityRepository;
+    @Autowired
+    private ThreeDimensionalFacilityWorker threeDimensionalFacilityWorker;
+
+    @Value("${path.repository.base}")
+    private String repository_path;
 
     public ArrayList<ThreeDimensionalFacilityModel> getAllEntities(Integer albumId)  {
 
@@ -79,5 +85,25 @@ public class ThreeDimensionalFacilityService {
             log.error("3D Model not found with id: {}", id);
             return false;
         }
+    }
+
+    public Boolean captureThreeDimensionalFacility(Integer albumId, ThreeDimensionalFacilityInfoModel model) {
+        String basePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId),"3D_modeling");
+
+        // 저장할 폴더 생성
+        String targetPath = URICreator.pathToString(basePath,"capture", String.valueOf(model.getId()));
+        log.info("targetPath : "+targetPath);
+        File targetDirectory = new File(targetPath);
+        boolean createFolderResult = false;
+        if (!targetDirectory.exists())
+            createFolderResult = targetDirectory.mkdirs();
+        
+
+        if (!createFolderResult) {
+            log.error("Can not make Folder");
+            return false;
+        }
+        
+        return threeDimensionalFacilityWorker.captureThreeDimensionalFacility(basePath,model);
     }
 }

@@ -3,6 +3,7 @@ package com.sierrabase.siriusapi.service.modeling;
 
 
 import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalModelingEntity;
+import com.sierrabase.siriusapi.model.SourceInfoModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModelingModel;
 import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalFacilityRepository;
 import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalModelingRepository;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -20,8 +23,7 @@ public class ThreeDimensionalModelingService {
     @Autowired
     private ThreeDimensionalModelingRepository threeDimensionalModelingRepository;
     @Autowired
-    private ThreeDimensionalFacilityRepository threeDimensionalFacilityRepository;
-
+    private ThreeDimensionalFacilityWorker threeDimensionalFacilityWorker;
     public ArrayList<ThreeDimensionalModelingModel> getAllEntities(Integer id)  {
         List<ThreeDimensionalModelingEntity> entities = threeDimensionalModelingRepository.findAllByAlbumId(id);
         if(entities.size() <= 0)
@@ -80,5 +82,26 @@ public class ThreeDimensionalModelingService {
             log.error("3D Modeling not found with id: {}", id);
             return false;
         }
+    }
+
+    public boolean importModel(Integer albumId, SourceInfoModel model) {
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(()-> {
+            boolean importResult = threeDimensionalFacilityWorker.importModel(albumId,model.getUrl());
+            if (!importResult) {
+                log.error("Import model Error");
+            }
+
+            boolean createResult = threeDimensionalFacilityWorker.createGLTF(albumId);
+            if (!createResult) {
+                log.error("Can not create GLTF File");
+            }
+            log.info("import success");
+
+        });
+        executorService.shutdown(); // 스레드 풀 종료 시작
+
+        return true;
     }
 }

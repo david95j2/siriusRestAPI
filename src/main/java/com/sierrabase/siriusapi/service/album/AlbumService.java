@@ -190,10 +190,10 @@ public class AlbumService {
             return false;
         }
 
-//        boolean alignResult = albumWorker.alignExtractedAlbum(albumId, sourceInfo);
-//        if (!alignResult) {
-//            return false;
-//        }
+        boolean alignResult = albumWorker.alignExtractedAlbum(albumId, sourceInfo);
+        if (!alignResult) {
+            return false;
+        }
 
         // initialize variable
         String nignxURI = ftpConfig.getNginxUri();
@@ -308,9 +308,9 @@ public class AlbumService {
             albumResource.includeImagesOn(analysisPath);
         }
 
-        String nignxURI = ftpConfig.getNginxUri();
+        String nginxUri = ftpConfig.getNginxUri();
         String newTargetPath = albumResource.getTargetPath().toString();
         newTargetPath = newTargetPath.substring(newTargetPath.indexOf("/album"));
-        return URICreator.pathToString(nignxURI, newTargetPath);
+        return URICreator.pathToString(nginxUri, newTargetPath);
     }
 }

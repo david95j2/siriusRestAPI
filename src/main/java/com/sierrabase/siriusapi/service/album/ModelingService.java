@@ -18,8 +18,8 @@ public class ModelingService {
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(()-> {
-            boolean importReuslt = modelingWorker.importModel(albumId,model.getUrl());
-            if (!importReuslt) {
+            boolean importResult = modelingWorker.importModel(albumId,model.getUrl());
+            if (!importResult) {
                 log.error("Import model Error");
             }
 

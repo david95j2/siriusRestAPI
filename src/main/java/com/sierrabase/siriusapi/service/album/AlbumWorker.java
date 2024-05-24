@@ -53,7 +53,7 @@ public class AlbumWorker {
             int resultCode = ExecuteScript.executeShellScript(null,null,"sb-extract",runArgument);
             if (resultCode != 0) return false;
         } catch (IOException | InterruptedException e) {
-            log.error("AlbumWorker Extract Erorr : "+e);
+            log.error("AlbumWorker Extract Error : "+e);
             return false;
         }
         return true;
