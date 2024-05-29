@@ -196,7 +196,7 @@ public class AlbumService {
         }
 
         // initialize variable
-        String nignxURI = ftpConfig.getNginxUri();
+        String nginxURI = ftpConfig.getNginxUri();
         String basePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId));
         String albumPath = URICreator.pathToString(basePath,"origin");
         File[] pictures = new File(albumPath).listFiles();
@@ -221,6 +221,14 @@ public class AlbumService {
                 }
 
                 CameraModel cameraModel = new CameraModel(metadataMap);
+                // 수평 및 수직 화각 계산
+                double horizontalFOV = calculateFOV(35.7, cameraModel.getFocusDistance());
+                double verticalFOV = calculateFOV(23.8, cameraModel.getFocusDistance());
+                horizontalFOV = radiansToDegrees(horizontalFOV);
+                verticalFOV = radiansToDegrees(verticalFOV);
+                cameraModel.setHorizontalFov(horizontalFOV);
+                cameraModel.setVerticalFov(verticalFOV);
+
                 createdCameraModel = cameraService.createEntity(cameraModel);
                 AlbumModel albumModel = getEntityById(albumId);
                 albumModel.setCameraId(createdCameraModel.getId());
@@ -243,12 +251,12 @@ public class AlbumService {
 //            if (file.getName().equals("info.csv")) continue;
 
             AlbumPhotoModel albumPhotoModel = albumPhotoService.createEntity(new AlbumPhotoModel(albumId, createdCameraModel.getId(),
-                    nignxURI + picture.getPath().substring(picture.getPath().indexOf("/album"))));
+                    nginxURI + picture.getPath().substring(picture.getPath().indexOf("/album"))));
 
             // if analysis exist -- 제거
             if (sourceInfo.isExistAnalysis()) {
                 AnalysisCrackModel analysisCrackModel = new AnalysisCrackModel();
-                String jsonFilePath = nignxURI + picture.getPath().substring(picture.getPath().indexOf("/album"));
+                String jsonFilePath = nginxURI + picture.getPath().substring(picture.getPath().indexOf("/album"));
                 jsonFilePath = jsonFilePath.replace("origin","analysis").replace(".JPG",".json");
                 analysisCrackModel.setAlbumId(albumId);
                 analysisCrackModel.setAnalysisId(createdAnalysisModel.getId());
@@ -273,7 +281,7 @@ public class AlbumService {
                     String thumbnailsPattern = file.getPath().substring(file.getPath().indexOf("/album")).replace("thumbnails", "origin");
                     AlbumPhotoModel resizedPhotoModel = albumPhotoService.getEntityByName(thumbnailsPattern);
 
-                    String new_path = nignxURI + file.getPath().substring(file.getPath().indexOf("/album"));
+                    String new_path = nginxURI + file.getPath().substring(file.getPath().indexOf("/album"));
                     resizedPhotoModel.setAlbumPhotoThumbnailsPath(new_path);
                     new_path = new_path.replace("thumbnails", "resized");
                     resizedPhotoModel.setAlbumPhotoResizedPath(new_path);
@@ -312,5 +320,14 @@ public class AlbumService {
         String newTargetPath = albumResource.getTargetPath().toString();
         newTargetPath = newTargetPath.substring(newTargetPath.indexOf("/album"));
         return URICreator.pathToString(nginxUri, newTargetPath);
+    }
+
+    private double radiansToDegrees(double radians) {
+        return radians * (180 / Math.PI);
+    }
+
+    // 화각을 계산하는 메서드
+    private double calculateFOV(double sensorDimension, double focalLength) {
+        return 2 * Math.atan(sensorDimension / (2 * focalLength));
     }
 }

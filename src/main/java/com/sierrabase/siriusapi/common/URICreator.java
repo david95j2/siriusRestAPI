@@ -10,7 +10,14 @@ public class URICreator {
             return "";
         }
 
-        Path path = Paths.get(segments[0], Arrays.copyOfRange(segments, 1, segments.length));
+        StringBuilder path = new StringBuilder(segments[0]);
+        for (int i = 1; i < segments.length; i++) {
+            if (!path.toString().endsWith("/")) {
+                path.append("/");
+            }
+            path.append(segments[i].replaceFirst("^/+", ""));
+        }
+
         return path.toString();
     }
 

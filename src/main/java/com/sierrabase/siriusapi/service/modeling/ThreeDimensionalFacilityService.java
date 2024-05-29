@@ -87,23 +87,4 @@ public class ThreeDimensionalFacilityService {
         }
     }
 
-    public Boolean captureThreeDimensionalFacility(Integer albumId, ThreeDimensionalFacilityInfoModel model) {
-        String basePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId),"3D_modeling");
-
-        // 저장할 폴더 생성
-        String targetPath = URICreator.pathToString(basePath,"capture", String.valueOf(model.getId()));
-        log.info("targetPath : "+targetPath);
-        File targetDirectory = new File(targetPath);
-        boolean createFolderResult = false;
-        if (!targetDirectory.exists())
-            createFolderResult = targetDirectory.mkdirs();
-        
-
-        if (!createFolderResult) {
-            log.error("Can not make Folder");
-            return false;
-        }
-        
-        return threeDimensionalFacilityWorker.captureThreeDimensionalFacility(basePath,model);
-    }
 }

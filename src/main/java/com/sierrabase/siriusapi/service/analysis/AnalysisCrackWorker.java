@@ -26,13 +26,29 @@ public class AnalysisCrackWorker {
     @Value("${path.worker.base}")
     private String worker_path;
 
+    public boolean inferenceBySingleGpu(Integer albumId) {
+        String pythonPath = URICreator.pathToString(worker_path,"AI_analyzer/temp_env/bin/python3");
+        String scriptPath = URICreator.pathToString(worker_path,"AI_analyzer/analyzer.py");
+        String sourcePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId), "origin");
+        String targetPath = sourcePath.replace("origin","analysis");
+        String[] scriptArguments = {"--img_dir", sourcePath, "--json_dir", targetPath};
+        try {
+            int resultCode = ExecuteScript.executeShellScript(pythonPath, null, scriptPath, scriptArguments);
+            if (resultCode != 0) return false;
+        } catch (IOException | InterruptedException e) {
+            log.error("Single GPU Inference error : "+e);
+            return false;
+        }
+        return true;
+    }
+
 //    public boolean inferenceBySingleGpu(Integer albumId) {
 //        String sourcePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId), "origin");
 //
-//        String pythonPath = URICreator.pathToString(worker_path,"AI_analyzer/venv_seg/bin/python3");
+//        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
 //
-//        String scriptPath = URICreator.pathToString("AI_analyzer/analyzer.py");
-//        String[] scriptArguments = {"--img_dir", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py",
+//        String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg_single_part4.py";
+//        String[] scriptArguments = {"--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py",
 //                "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
 //                "--srx_dir", sourcePath,
 //                "--srx_suffix", ".JPG"};
@@ -45,26 +61,6 @@ public class AnalysisCrackWorker {
 //        }
 //        return true;
 //    }
-
-    public boolean inferenceBySingleGpu(Integer albumId) {
-        String sourcePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId), "origin");
-
-        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
-
-        String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg_single_part4.py";
-        String[] scriptArguments = {"--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py",
-                "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
-                "--srx_dir", sourcePath,
-                "--srx_suffix", ".JPG"};
-        try {
-            int resultCode = ExecuteScript.executeShellScript(pythonPath, null, scriptPath, scriptArguments);
-            if (resultCode != 0) return false;
-        } catch (IOException | InterruptedException e) {
-            log.error("Single GPU Inference error : "+e);
-            return false;
-        }
-        return true;
-    }
 
     public boolean computeCrackToCameraDistancesForFolder(AlbumModel model) {
         String sourcePath = URICreator.pathToString(repository_path,"album",String.valueOf(model.getId()));

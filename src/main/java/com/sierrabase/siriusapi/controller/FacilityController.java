@@ -337,7 +337,7 @@ public class FacilityController {
             return ResponseEntity.notFound().build();
         }
 
-        String newUrl = URICreator.pathToString(ftpConfig.getNginxUri(),targetFile.getPath().substring(targetFile.getPath().indexOf("/repo")));
+        String newUrl = URICreator.pathToString(ftpConfig.getNginxUri(),targetFile.getPath().substring(targetFile.getPath().indexOf("/facility")));
 
         FacilityMapModel uploadModel = new FacilityMapModel();
         uploadModel.setFacilityId(f_id);

@@ -28,6 +28,8 @@ public class CameraModel {
     private double exposureBias;
     private double focusDistance;
     private double iso;
+    private double horizontalFov;
+    private double verticalFov;
     private ZonedDateTime createdDatetime;
     private ZonedDateTime wrDatetime;
 
@@ -43,6 +45,8 @@ public class CameraModel {
         setExposureBias(entity.getExposure_bias());
         setFocusDistance(entity.getFocus_distance());
         setIso(entity.getIso());
+        setHorizontalFov(entity.getHorizontal_fov());
+        setVerticalFov(entity.getVertical_fov());
         setCreatedDatetime(entity.getCreated_datetime());
         setWrDatetime(entity.getWr_datetime());
     }

@@ -1,6 +1,7 @@
 package com.sierrabase.siriusapi.service.analysis;
 
 import com.sierrabase.siriusapi.common.URICreator;
+import com.sierrabase.siriusapi.entity.album.AlbumEntity;
 import com.sierrabase.siriusapi.entity.album.AlbumPhotoEntity;
 import com.sierrabase.siriusapi.entity.analysis.AnalysisCrackEntity;
 
@@ -8,6 +9,7 @@ import com.sierrabase.siriusapi.model.album.AlbumModel;
 import com.sierrabase.siriusapi.model.album.AlbumPhotoModel;
 import com.sierrabase.siriusapi.model.analysis.AnalysisCrackModel;
 import com.sierrabase.siriusapi.model.analysis.JsonModel;
+import com.sierrabase.siriusapi.repository.album.AlbumEntityRepository;
 import com.sierrabase.siriusapi.repository.album.AlbumPhotoPosEntityRepository;
 import com.sierrabase.siriusapi.repository.analysis.AnalysisCrackEntityRepository;
 import com.sierrabase.siriusapi.service.album.AlbumPhotoService;
@@ -29,6 +31,8 @@ public class AnalysisCrackService {
 
     @Autowired
     private AlbumPhotoService albumPhotoService;
+    @Autowired
+    private AlbumEntityRepository albumEntityRepository;
     @Autowired
     private AnalysisCrackEntityRepository analysisCrackEntityRepository;
     @Autowired
@@ -127,18 +131,24 @@ public class AnalysisCrackService {
             return false;
         }
 
-//        AlbumModel albumModel = albumService.getEntityById(model.getAlbumId());
-//        Integer facilityId = albumModel.getFacilityId();
-//        Integer facilityMapId = albumModel.getFacilityMapId();
-//
-//        // 균열 별 이격거리 계산
-//        String calDisResult = analysisCrackWorker.computeCrackToCameraDistanceForFile(facilityId,facilityMapId, albumPhotoInfo);
-//        if(calDisResult == null) {
-//            log.error("Compute Crack To Camera Distances modify Error");
-//            return false;
-//        }
+        Optional<AlbumEntity> entity = albumEntityRepository.findById(model.getAlbumId());
 
-//        boolean resetIndexResult = analysisCrackWorker.resetIndexForFile(calDisResult);
-        return true;
+        if(!entity.isPresent()) {
+            log.error("albumEntity not found!");
+            return false;
+        }
+
+        AlbumModel albumModel = new AlbumModel(entity.get());
+        Integer facilityId = albumModel.getFacilityId();
+        Integer facilityMapId = albumModel.getFacilityMapId();
+
+        // 균열 별 이격거리 계산
+        String calDisResult = analysisCrackWorker.computeCrackToCameraDistanceForFile(facilityId,facilityMapId, albumPhotoInfo);
+        if(calDisResult == null) {
+            log.error("Compute Crack To Camera Distances modify Error");
+            return false;
+        }
+        
+        return analysisCrackWorker.resetIndexForFile(calDisResult);
     }
 }

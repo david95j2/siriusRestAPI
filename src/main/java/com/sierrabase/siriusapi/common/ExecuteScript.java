@@ -3,6 +3,7 @@ package com.sierrabase.siriusapi.common;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -28,26 +29,50 @@ public class ExecuteScript {
         command.addAll(Arrays.asList(arguments));
         log.info("command all : "+command);
         ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+        if (scriptPath.contains("analyzer.py")) {
+            String parent = new File(scriptPath).getParent();
+            File currentDirectory = new File(parent);
+            processBuilder.directory(currentDirectory);
+        }
+        if (scriptPath.contains("GLBLoader")) {
+            processBuilder.environment().put("DISPLAY", ":1.0");
+        }
+
         Process process = processBuilder.start();
 
-        // 출력 읽기
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-//                System.out.println(line);
-            }
-        }
 
-        // 표준 에러 읽기
-        try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                System.err.println("Error: " + line);  // 에러 메시지는 System.err를 통해 출력
+        // 표준 출력 스트림 읽기
+        Thread stdoutThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    log.info(line);
+                }
+            } catch (IOException e) {
+                log.error("Error reading stdout", e);
             }
-        }
+        });
 
+        // 표준 에러 스트림 읽기
+        Thread stderrThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+//                    log.error("Error: " + line);
+                }
+            } catch (IOException e) {
+                log.error("Error reading stderr", e);
+            }
+        });
+
+        // 스레드 시작
+        stdoutThread.start();
+        stderrThread.start();
 
         int exitCode = process.waitFor();
+        stdoutThread.join();
+        stderrThread.join();
 
         if (exitCode != 0) {
 //            throw new RuntimeException("script execution failed with exit code: " + exitCode);

@@ -40,36 +40,17 @@ public class ThreeDimensionalFacilityWorker {
         return true;
     }
 
-    public boolean createGLTF(Integer albumId) {
-        String targetPath = URICreator.pathToString(repository_path,"album", String.valueOf(albumId),"3D_modeling");
-
+    public boolean createGLTF(Integer albumId, Integer modelId) {
+        String sourcePath = URICreator.pathToString(repository_path,"album", String.valueOf(albumId),"3D_modeling");
+        String targetPath = URICreator.pathToString(repository_path,"model", String.valueOf(modelId));
         String gltfRunPath = URICreator.pathToString(worker_path,"convert2glb.py");
-        String[] gltfArgument = {"--",targetPath+"/Data","Tile",targetPath,"16"};
+        String[] gltfArgument = {"--",sourcePath+"/Data","Tile",targetPath,"16"};
 
         try {
             int resultCode = ExecuteScript.executeShellScript("blender", "-b -P", gltfRunPath, gltfArgument);
             if (resultCode != 0) return false;
         } catch (IOException | InterruptedException e) {
             log.error("Blender error : "+e);
-            return false;
-        }
-        return true;
-    }
-
-    public Boolean captureThreeDimensionalFacility(String basePath, ThreeDimensionalFacilityInfoModel model) {
-        String scriptPath = URICreator.pathToString(worker_path,"modelCapture/build/GLBLoader");
-        String sourcePath = URICreator.pathToString(basePath,"original_model.glb");
-        String targetPath = URICreator.pathToString(basePath,"capture", String.valueOf(model.getId()));
-        String[] runArgument = {sourcePath, targetPath,
-                                model.minWidthToString(),model.minHeightToString(),model.minDepthToString(),
-                                model.maxWidthToString(),model.maxHeightToString(),model.maxDepthToString(),
-                                model.rotationToString(),model.verticalToString()};
-
-        try {
-            int resultCode = ExecuteScript.executeShellScript(null,null,scriptPath,runArgument);
-            if (resultCode != 0) return false;
-        } catch (IOException | InterruptedException e) {
-            log.error("3D Model Capture Error : "+e);
             return false;
         }
         return true;

@@ -109,21 +109,25 @@ public class ThreeDimensionalModelingController {
             ResponseEntity.badRequest().build();
         }
 
-        boolean result = threeDimensionalModelingService.importModel(a_id,model);
-
         ThreeDimensionalModelingModel modelingModel = new ThreeDimensionalModelingModel();
         modelingModel.setAlbumId(a_id);
         modelingModel.setName("import model");
         modelingModel.setType(1);
         modelingModel.setTypeName("glb");
         modelingModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
-        if (!result) {
-            modelingModel.setStatus("Server Error");
-            threeDimensionalModelingService.createEntity(modelingModel);
+        modelingModel.setStatus("Running");
+        ThreeDimensionalModelingModel createdModelingModel = threeDimensionalModelingService.createEntity(modelingModel);
+
+        boolean importResult = threeDimensionalModelingService.importModel(a_id,createdModelingModel.getId(),model);
+
+        if (!importResult) {
+            createdModelingModel.setStatus("Server Error");
+            threeDimensionalModelingService.updateEntity(createdModelingModel.getId(), createdModelingModel);
             return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not import 3D model"));
         }
-        modelingModel.setStatus("Completed");
-        ThreeDimensionalModelingModel createdModelingModel = threeDimensionalModelingService.createEntity(modelingModel);
+
+        createdModelingModel.setStatus("Completed");
+        createdModelingModel = threeDimensionalModelingService.updateEntity(createdModelingModel.getId(), createdModelingModel);
         if (createdModelingModel == null) {
             return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create modeling"));
         }
@@ -133,19 +137,27 @@ public class ThreeDimensionalModelingController {
         facilityModel.setAlbumId(a_id);
         facilityModel.setType(1);
         facilityModel.setTypeName("down sampled");
-        System.out.println(ftpConfig.getNginxUri()+"/"+URICreator.pathToString("album",String.valueOf(a_id),"3D_modeling/downsampled_model.glb"));
-        facilityModel.setThreeDimensionalFacilityUrl(ftpConfig.getNginxUri()+"/"+URICreator.pathToString("album",String.valueOf(a_id),"3D_modeling/downsampled_model.glb"));
+        facilityModel.setThreeDimensionalFacilityUrl(URICreator.pathToString(ftpConfig.getNginxUri(),"model",String.valueOf(createdModelingModel.getId()),"downsampled_model.glb"));
         facilityModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
         ThreeDimensionalFacilityModel createdFacilityModel = threeDimensionalFacilityService.createEntity(facilityModel);
+        createdFacilityModel.setThreeDimensionalFacilityUrl(URICreator.pathToString(ftpConfig.getNginxUri(),"model",String.valueOf(createdFacilityModel.getId()),"downsampled_model.glb"));
+        createdFacilityModel = threeDimensionalFacilityService.updateEntity(createdFacilityModel.getId(),createdFacilityModel);
+
         log.info("create 3d facility : "+createdFacilityModel);
         if (createdFacilityModel == null) {
             return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create model"));
         }
 
-        ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
+        boolean createResult = threeDimensionalModelingService.createGLTF(a_id,createdFacilityModel.getId());
+
+        if (!createResult) {
+            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create GLTF model"));
+        }
+
+        ResponseDTO<ThreeDimensionalFacilityModel> response = ResponseDTO.<ThreeDimensionalFacilityModel>builder()
                 .uri(getUri(uri_modelings))
-//                .success(modelList != null)
-//                .result(modelList)
+                .success(createdFacilityModel != null)
+                .result(createdFacilityModel)
                 .build();
 
         return ResponseEntity.ok().body(response);

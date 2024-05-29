@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface AlbumPhotoEntityRepository extends JpaRepository<AlbumPhotoEntity, Integer> {
 
-    @Query("select ap from AlbumPhotoEntity ap where ap.album_id =:album_id")
+    @Query("select ap from AlbumPhotoEntity ap where ap.album_id =:album_id order by ap.album_photo_path asc")
     List<AlbumPhotoEntity> findByAlbumId(Integer album_id);
 
 

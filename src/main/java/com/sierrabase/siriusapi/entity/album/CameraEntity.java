@@ -36,7 +36,12 @@ public class CameraEntity{
     private double exposure_bias;
     @Column(name = "focus_distance")
     private double focus_distance;
+    @Column(name = "iso")
     private double iso;
+    @Column(name = "horizontal_fov")
+    private double horizontal_fov;
+    @Column(name = "vertical_fov")
+    private double vertical_fov;
     @Column(name = "created_datetime")
     private ZonedDateTime created_datetime;
     @Column(name = "wr_datetime")
@@ -55,6 +60,8 @@ public class CameraEntity{
         setExposure_bias(model.getExposureBias());
         setFocus_distance(model.getFocusDistance());
         setIso(model.getIso());
+        setHorizontal_fov(model.getHorizontalFov());
+        setVertical_fov(model.getVerticalFov());
         setCreated_datetime(model.getCreatedDatetime());
         setWr_datetime(model.getWrDatetime());
     }

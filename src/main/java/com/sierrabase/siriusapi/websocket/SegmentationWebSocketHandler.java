@@ -101,7 +101,7 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
 //            String pattern = "^\\d{8}_\\d{6}_-?\\d+\\.\\d+_\\d+\\.\\d+_\\d+\\.\\d+_(-?\\d+\\.\\d+)_(-?\\d+\\.\\d+)_(-?\\d+\\.\\d+)_\\d{5}_\\d+_\\d+\\.json$";
 
         for (File file : files) {
-            if (!file.getName().endsWith("_seg_points.json")) { // file.getName().matches(pattern)
+            if (!(file.getName().endsWith("_seg_points.json") || file.getName().endsWith("_skel.json"))) { // file.getName().matches(pattern)
                 String jsonContent = new String(Files.readAllBytes(Paths.get(file.getPath())));
                 int crackCount;
                 if (jsonContent.length() != 5) {
