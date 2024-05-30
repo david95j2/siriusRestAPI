@@ -16,14 +16,14 @@ import java.time.ZonedDateTime;
 public class DroneSystemLogModel {
     private int droneSystemLogId;
     private int droneId;
-    private int droneSystemServerity;
+    private int droneSystemSeverity;
     private String droneSystemMessage;
     private ZonedDateTime created_datetime;
 
     public DroneSystemLogModel(final DroneSystemLogEntity entity) {
         setDroneSystemLogId(entity.getDroneSystemLogId());
         setDroneId(entity.getDroneId());
-        setDroneSystemServerity(entity.getDroneSystemServerity());
+        setDroneSystemSeverity(entity.getDroneSystemServerity());
         setDroneSystemMessage(entity.getDroneSystemMessage());
         setCreated_datetime(entity.getCreated_datetime());
     }

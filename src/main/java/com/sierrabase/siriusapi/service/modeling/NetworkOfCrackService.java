@@ -61,7 +61,7 @@ public class NetworkOfCrackService {
             NetworkOfCrackEntity entity = optionalEntity.get();
             // Update properties from facilityModel to entity
 
-            entity = networkOfCrackRepository.save(new NetworkOfCrackEntity(entity.getThree_dimensional_model_id(), model));
+            entity = networkOfCrackRepository.save(new NetworkOfCrackEntity(entity.getNetwork_of_crack_id(), model));
             return new NetworkOfCrackModel(entity);
         } else {
             log.error("Network of crack for CAD not found with id: {}", id);

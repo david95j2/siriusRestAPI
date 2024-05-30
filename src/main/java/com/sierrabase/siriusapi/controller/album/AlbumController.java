@@ -168,7 +168,7 @@ public class AlbumController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping(uri_export)
+    @GetMapping(uri_export)
     public ResponseEntity<?> exportAlbum(@PathVariable String album_id) {
 
         if (!parsePathVariablesOfAlbum(album_id)) {

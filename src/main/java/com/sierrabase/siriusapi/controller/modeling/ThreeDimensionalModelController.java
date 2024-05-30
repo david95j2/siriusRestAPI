@@ -7,6 +7,7 @@ import com.sierrabase.siriusapi.dto.ResponseCodeDTO;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
 import com.sierrabase.siriusapi.dto.ResponseURLDTO;
 import com.sierrabase.siriusapi.model.SourceInfoModel;
+import com.sierrabase.siriusapi.model.modeling.NetworkOfCrackModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModelingModel;
@@ -48,7 +49,7 @@ public class ThreeDimensionalModelController {
         return true;
     }
 
-    private boolean parsePathVariablesOfModeling(String facilityId, String modelId) {
+    private boolean parsePathVariablesOfModel(String facilityId, String modelId) {
         if(!parsePathVariablesOfFacility(facilityId))
             return false;
         m_id = URIParser.parseStringToIntegerId(modelId);
@@ -85,7 +86,7 @@ public class ThreeDimensionalModelController {
             @PathVariable String facility_id,
             @PathVariable String model_id)
     {
-        if(!parsePathVariablesOfModeling(facility_id,model_id))
+        if(!parsePathVariablesOfModel(facility_id,model_id))
             return ResponseEntity.badRequest().build();
 
         ThreeDimensionalModel model = threeDimensionalModelService.getEntityById(m_id);
@@ -104,7 +105,7 @@ public class ThreeDimensionalModelController {
             @PathVariable String facility_id,
             @PathVariable String model_id) {
 
-        if(!parsePathVariablesOfModeling(facility_id,model_id))
+        if(!parsePathVariablesOfModel(facility_id,model_id))
             return ResponseEntity.badRequest().build();
 
         String targetPath = threeDimensionalModelService.getElevationURL(m_id);
@@ -119,6 +120,45 @@ public class ThreeDimensionalModelController {
                 .uri(getUri(uri_export))
                 .success(true)
                 .result(new ResponseURLDTO<>(targetPath))
+                .build();
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PutMapping(uri_model)
+    public ResponseEntity<?> updateNetworkOfCrack(
+            @PathVariable String facility_id,
+            @PathVariable String model_id,
+            @RequestBody ThreeDimensionalModel model) {
+
+        if(!parsePathVariablesOfModel(facility_id,model_id))
+            return ResponseEntity.badRequest().build();
+
+        ThreeDimensionalModel updatedModel = threeDimensionalModelService.updateEntity(m_id, model);
+        log.info("model: " + updatedModel);
+        ResponseDTO<ThreeDimensionalModel> response = ResponseDTO.<ThreeDimensionalModel>builder()
+                .uri(getUri(uri_model))
+                .success(updatedModel != null)
+                .result(updatedModel)
+                .build();
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @DeleteMapping(uri_model)
+    public ResponseEntity<?> deleteNetworkOfCrack(
+            @PathVariable String facility_id,
+            @PathVariable String model_id) {
+
+        if(!parsePathVariablesOfModel(facility_id,model_id))
+            return ResponseEntity.badRequest().build();
+
+        boolean deleted = threeDimensionalModelService.deleteEntity(m_id);
+        log.info("model: " + deleted);
+        ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
+                .uri(getUri(uri_model))
+                .success(deleted)
+                .result(deleted)
                 .build();
 
         return ResponseEntity.ok().body(response);

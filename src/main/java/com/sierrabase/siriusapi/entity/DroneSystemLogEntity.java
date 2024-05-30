@@ -39,7 +39,7 @@ public class DroneSystemLogEntity implements Serializable {
     public DroneSystemLogEntity(final DroneSystemLogModel model) {
         setDroneSystemLogId(model.getDroneSystemLogId());
         setDroneId(model.getDroneId());
-        setDroneSystemServerity(model.getDroneSystemServerity());
+        setDroneSystemServerity(model.getDroneSystemSeverity());
         setDroneSystemMessage(model.getDroneSystemMessage());
     }
     public DroneSystemLogEntity(final Integer id, final DroneSystemLogModel model) {

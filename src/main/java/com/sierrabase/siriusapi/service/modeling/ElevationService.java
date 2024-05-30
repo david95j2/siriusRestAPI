@@ -127,15 +127,17 @@ public class ElevationService {
     public void createAnalysisCrack(Integer modelId, Integer modelInfoId, AnalysisModel model, ThreeDimensionalModel threeDimensionalModel) {
 //        ExecutorService executorService = Executors.newSingleThreadExecutor();
 //        executorService.execute(() -> {
-        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(modelId));
+        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(modelInfoId));
 //        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(modelInfoId));
         log.info("service sourcePath : " + sourcePath);
 
         boolean result = elevationWorker.inferenceBySingleGpu(sourcePath);
         log.info("service result : " + result);
-        boolean compressedResult = zipDirectory(sourcePath, sourcePath + ".zip");
+        String zipFilePath = URICreator.pathToString(repository_path,"model",String.valueOf(modelId),"elevation",modelId+".zip");
+        log.info("zipFilePath : "+zipFilePath);
+        boolean compressedResult = zipDirectory(sourcePath, zipFilePath);
         if (compressedResult) {
-            String zipPath = sourcePath + ".zip";
+            String zipPath = zipFilePath;
             AnalysisCrackModel analysisCrackModel = new AnalysisCrackModel(model.getAlbumId(), model.getId(),
                     ftpConfig.getNginxUri() + zipPath.substring(zipPath.indexOf("/model")), 0);
             AnalysisCrackEntity entity = new AnalysisCrackEntity(analysisCrackModel);
