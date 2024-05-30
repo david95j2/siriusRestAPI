@@ -38,31 +38,5 @@ class SiriusApiApplicationTests {
 	@Test
 	void contextLoads() {
 
-		String sourcePath = URICreator.pathToString(repository_path,"model","25","elevation","49","analysis");
-		File sourceFolder = Paths.get(sourcePath).toFile();
-		File[] files = sourceFolder.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (!(file.getName().endsWith("_seg_points.json") || file.getName().endsWith("_skel.json"))) { // file.getName().matches(pattern)
-					try {
-						String jsonContent = new String(Files.readAllBytes(Paths.get(file.getPath())));
-						int crackCount;
-						if (jsonContent.length() != 5) {
-							crackCount = new JSONArray(jsonContent).length();
-						} else {
-							crackCount = 0;
-						}
-
-						AnalysisCrackModel analysisCrackModel = new AnalysisCrackModel(132, 156,
-								ftpConfig.getNginxUri()+file.getPath().substring(file.getPath().indexOf("/model")),crackCount);
-						AnalysisCrackEntity entity = new AnalysisCrackEntity(analysisCrackModel);
-						analysisCrackEntityRepository.save(entity);
-					} catch (IOException e) {
-//						log.error("Can not read elevation json :"+file.getPath());
-					}
-				}
-			}
-		}
-
 	}
 }

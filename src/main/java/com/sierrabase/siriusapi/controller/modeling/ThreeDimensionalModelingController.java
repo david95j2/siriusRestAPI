@@ -7,10 +7,14 @@ import com.sierrabase.siriusapi.dto.ResponseCodeDTO;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
 import com.sierrabase.siriusapi.model.FacilityModel;
 import com.sierrabase.siriusapi.model.SourceInfoModel;
+import com.sierrabase.siriusapi.model.album.AlbumModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModelingModel;
+import com.sierrabase.siriusapi.service.album.AlbumService;
 import com.sierrabase.siriusapi.service.album.ModelingService;
 import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityService;
+import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalModelService;
 import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalModelingService;
 import com.sierrabase.siriusapi.service.worker.WorkerService;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +66,10 @@ public class ThreeDimensionalModelingController {
     private ThreeDimensionalModelingService threeDimensionalModelingService;
     @Autowired
     private ThreeDimensionalFacilityService threeDimensionalFacilityService;
+    @Autowired
+    private AlbumService albumService;
+    @Autowired
+    private ThreeDimensionalModelService threeDimensionalModelService;
     // GET - a facility
     @GetMapping(uri_modelings)
     public ResponseEntity<?> getModelings(
@@ -153,6 +161,19 @@ public class ThreeDimensionalModelingController {
         if (!createResult) {
             return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create GLTF model"));
         }
+
+        // 3d model 만들기
+        AlbumModel albumModel = albumService.getEntityById(a_id);
+        ThreeDimensionalModel threeDimensionalModel = new ThreeDimensionalModel();
+        threeDimensionalModel.setId(createdFacilityModel.getId());
+        threeDimensionalModel.setFacilityId(albumModel.getFacilityId());
+        threeDimensionalModel.setThreeDimensionalModelUrl(createdFacilityModel.getThreeDimensionalFacilityUrl());
+        threeDimensionalModel.setElevationStatus("Waiting");
+        threeDimensionalModel.setAlbumDatetime(albumModel.getCreatedDatetime());
+        threeDimensionalModel.setAlbumName(albumModel.getName());
+        threeDimensionalModel.setCreatedDatetime(facilityModel.getCreatedDatetime());
+        ThreeDimensionalModel createdThreeDimensionalModel = threeDimensionalModelService.createEntity(threeDimensionalModel);
+        log.info("3D Model for Cad : "+createdThreeDimensionalModel);
 
         ResponseDTO<ThreeDimensionalFacilityModel> response = ResponseDTO.<ThreeDimensionalFacilityModel>builder()
                 .uri(getUri(uri_modelings))

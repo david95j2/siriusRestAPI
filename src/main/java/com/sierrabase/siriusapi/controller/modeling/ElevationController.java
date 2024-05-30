@@ -7,15 +7,19 @@ import com.sierrabase.siriusapi.dto.ResponseDTO;
 import com.sierrabase.siriusapi.model.analysis.AnalysisModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModel;
 import com.sierrabase.siriusapi.service.analysis.AnalysisService;
 import com.sierrabase.siriusapi.service.modeling.ElevationService;
 import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityService;
+import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalModelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 @Slf4j
@@ -66,12 +70,13 @@ public class ElevationController {
 
         return true;
     }
-    
+
     @Autowired
     private ElevationService elevationService;
     @Autowired
     private AnalysisService analysisService;
-
+    @Autowired
+    private ThreeDimensionalModelService threeDimensionalModelService;
     // POST - Elevation of the 3d model
     @PostMapping(uri_model_elevation)
     public ResponseEntity<?> createElevation(
@@ -82,36 +87,35 @@ public class ElevationController {
         if(!parsePathVariablesOfModel(album_id,modeling_id,model_id))
             return ResponseEntity.badRequest().build();
 
-        log.info("elevation model :"+model);
-        Boolean result = elevationService.createElevationFiles(m_m_id,model);
-        if (!result) {
-            log.error("Error create elevation");
-            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create model"));
-        }
-
-        AnalysisModel analysisModel = new AnalysisModel();
-        analysisModel.setAlbumId(a_id);
-        analysisModel.setName("elevation crack");
-        analysisModel.setType(1);
-        analysisModel.setTypeName("Segmentation");
-        analysisModel.setStatus("Running");
-        AnalysisModel createdAnalysisModel = analysisService.createEntity(analysisModel);
-        log.info("Elevation analysis :"+createdAnalysisModel);
-        Boolean createdAnalysisCrackResult = elevationService.createAnalysisCrack(m_m_id,model.getId(),createdAnalysisModel);
-        log.info("Elevation Controller result :"+createdAnalysisCrackResult);
-        if (!createdAnalysisCrackResult) {
-            createdAnalysisModel.setStatus("Error");
-            analysisService.updateEntity(createdAnalysisModel.getId(),createdAnalysisModel);
-            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Can not inference elevation"));
-        }
-        createdAnalysisModel.setStatus("Completed");
-        analysisService.updateEntity(createdAnalysisModel.getId(),createdAnalysisModel);
+        elevationService.createElevation(a_id,m_m_id,model);
+//        ThreeDimensionalModel threeDimensionalModel = threeDimensionalModelService.getEntityById(m_m_id);
+//        threeDimensionalModel.setElevationStatus("Running");
+//        threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
+//
+//        Boolean result = elevationService.createElevationFiles(m_m_id,model);
+//        if (!result) {
+//            log.error("Error create elevation");
+//            threeDimensionalModel.setElevationStatus("Error");
+//            threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
+//            return ResponseEntity.ok().body(new ResponseCodeDTO<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),"Can not create model"));
+//        }
+//
+//        AnalysisModel analysisModel = new AnalysisModel();
+//        analysisModel.setAlbumId(a_id);
+//        analysisModel.setName("elevation crack");
+//        analysisModel.setType(1);
+//        analysisModel.setTypeName("Segmentation");
+//        analysisModel.setStatus("Running");
+//        analysisModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
+//        AnalysisModel createdAnalysisModel = analysisService.createEntity(analysisModel);
+//
+//        log.info("Elevation analysis :"+createdAnalysisModel);
+//        elevationService.createAnalysisCrack(m_m_id,model.getId(),createdAnalysisModel, threeDimensionalModel);
 
         ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
                 .uri(getUri(uri_model_elevation))
-                .success(result)
-                .result(result)
+                .success(true)
+                .result(true)
                 .build();
 
         return ResponseEntity.ok().body(response);

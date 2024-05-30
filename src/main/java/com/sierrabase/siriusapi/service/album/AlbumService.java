@@ -230,6 +230,7 @@ public class AlbumService {
                 cameraModel.setVerticalFov(verticalFOV);
 
                 createdCameraModel = cameraService.createEntity(cameraModel);
+                log.info("albumId import : "+albumId);
                 AlbumModel albumModel = getEntityById(albumId);
                 albumModel.setCameraId(createdCameraModel.getId());
                 albumModel.setPhotoCount(pictures.length);
