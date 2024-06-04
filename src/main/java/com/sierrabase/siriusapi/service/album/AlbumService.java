@@ -307,14 +307,18 @@ public class AlbumService {
 
     public String exportAlbum(Integer albumId) {
         String basePath = URICreator.pathToString(repository_path, "album", String.valueOf(albumId));
-        Path originPath = URICreator.pathTopath(basePath,"origin");
+        Path albumPath = URICreator.pathTopath(basePath,"origin");
         Path analysisPath = URICreator.pathTopath(basePath,"analysis");
 
         albumResource.initialize(albumId);
-        albumResource.includeImagesOn(originPath);
+        try {
+            albumResource.includeImagesOn(albumPath);
 
-        if (Files.exists(analysisPath)) {
-            albumResource.includeImagesOn(analysisPath);
+            if (Files.exists(analysisPath)) {
+                albumResource.includeImagesOn(analysisPath);
+            }
+        } finally {
+            albumResource.close();
         }
 
         String nginxUri = ftpConfig.getNginxUri();

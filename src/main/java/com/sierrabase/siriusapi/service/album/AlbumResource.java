@@ -34,6 +34,7 @@ public class AlbumResource {
     public void initialize(Integer albumId) {
         this.basePath = URICreator.pathToString(repository_path, "album", String.valueOf(albumId));
         this.targetPath = URICreator.pathTopath(basePath,albumId+".zip");
+        log.info("targetPath : "+targetPath);
 
         try {
             this.zos = new ZipOutputStream(new FileOutputStream(targetPath.toFile()));
@@ -62,6 +63,14 @@ public class AlbumResource {
         }
         return true;
     }
-
+    public void close() {
+        if (this.zos != null) {
+            try {
+                this.zos.close();
+            } catch (IOException e) {
+                log.error("Cannot close ZipOutputStream", e);
+            }
+        }
+    }
 
 }

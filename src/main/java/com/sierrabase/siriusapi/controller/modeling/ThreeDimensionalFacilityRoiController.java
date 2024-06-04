@@ -2,10 +2,9 @@ package com.sierrabase.siriusapi.controller.modeling;
 
 import com.sierrabase.siriusapi.common.URIParser;
 import com.sierrabase.siriusapi.dto.ResponseDTO;
-import com.sierrabase.siriusapi.model.modeling.NetworkOfCrackModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
-import com.sierrabase.siriusapi.service.modeling.NetworkOfCrackService;
-import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityInfoService;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityRoiModel;
+import com.sierrabase.siriusapi.service.modeling.ThreeDimensionalFacilityRoiService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +14,14 @@ import java.util.ArrayList;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/facility")
-public class NetworkOfCrackController {
-    static private final String apiTag = "/api/facility";
+@RequestMapping("/api/facilities")
+public class ThreeDimensionalFacilityRoiController {
+    static private final String apiTag = "/api/facilities";
     static private final String uri_facility = "/{facility_id}";
-    static private final String uri_models = uri_facility + "/model";
+    static private final String uri_models = uri_facility + "/models";
     static private final String uri_model = uri_models + "/{model_id}";
-    static private final String uri_crack_networks = uri_model + "/crack-network";
-    static private final String uri_crack_network = uri_crack_networks + "/{crack_network_id}";
+    static private final String uri_model_rois = uri_model + "/rois";
+    static private final String uri_model_roi = uri_model_rois + "/{roi_id}";
 
 
     private String getUri(final String methodName) {
@@ -30,7 +29,7 @@ public class NetworkOfCrackController {
     }
 
 
-    private int f_id, m_id, n_c_id;
+    private int f_id, m_id, m_r_id;
 
     private boolean parsePathVariablesOfFacility(String facilityId) {
         f_id = URIParser.parseStringToIntegerId(facilityId);
@@ -48,13 +47,13 @@ public class NetworkOfCrackController {
         return true;
     }
 
-    private boolean parsePathVariablesOfNetworkOfCrack(String facilityId, String modelId, String networkCrackId) {
+    private boolean parsePathVariablesOfModelRoi(String facilityId, String modelId, String modelRoiId) {
         if(!parsePathVariablesOfModel(facilityId, modelId))
             return false;
 
-        n_c_id = URIParser.parseStringToIntegerId(networkCrackId);
+        m_r_id = URIParser.parseStringToIntegerId(modelRoiId);
 
-        if(n_c_id < 0)
+        if(m_r_id < 0)
             return false;
 
         return true;
@@ -62,11 +61,11 @@ public class NetworkOfCrackController {
 
 
     @Autowired
-    private NetworkOfCrackService networkOfCrackService;
+    private ThreeDimensionalFacilityRoiService threeDimensionalFacilityRoiService;
 
-    // GET - a facility
-    @GetMapping(uri_crack_networks)
-    public ResponseEntity<?> getNetworkOfCracks(
+    // GET - model ROIS
+    @GetMapping(uri_model_rois)
+    public ResponseEntity<?> getThreeDimensionalFacilityROIs(
             @PathVariable String facility_id,
             @PathVariable String model_id)
     {
@@ -74,10 +73,12 @@ public class NetworkOfCrackController {
         if(!parsePathVariablesOfModel(facility_id,model_id))
             return ResponseEntity.badRequest().build();
 
-        ArrayList<NetworkOfCrackModel> modelList = networkOfCrackService.getAllEntities(m_id);
+        ArrayList<ThreeDimensionalFacilityRoiModel> modelList = threeDimensionalFacilityRoiService.getAllEntities(m_id);
 //        log.info("model: " + facility);
-        ResponseDTO<ArrayList<NetworkOfCrackModel>> response = ResponseDTO.<ArrayList<NetworkOfCrackModel> >builder()
-                .uri(getUri(uri_crack_networks))
+
+
+        ResponseDTO<ArrayList<ThreeDimensionalFacilityRoiModel>> response = ResponseDTO.<ArrayList<ThreeDimensionalFacilityRoiModel> >builder()
+                .uri(getUri(uri_model_rois))
                 .success(modelList != null)
                 .result(modelList)
                 .build();
@@ -85,19 +86,19 @@ public class NetworkOfCrackController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping(uri_crack_network)
-    public ResponseEntity<?> getNetworkOfCrack(
+    @GetMapping(uri_model_roi)
+    public ResponseEntity<?> getThreeDimensionalFacilityROIById(
             @PathVariable String facility_id,
             @PathVariable String model_id,
-            @PathVariable String crack_network_id)
+            @PathVariable String roi_id)
     {
-        if(!parsePathVariablesOfNetworkOfCrack(facility_id,model_id,crack_network_id))
+        if(!parsePathVariablesOfModelRoi(facility_id,model_id,roi_id))
             return ResponseEntity.badRequest().build();
 
-        NetworkOfCrackModel model = networkOfCrackService.getEntityById(n_c_id);
+        ThreeDimensionalFacilityRoiModel model = threeDimensionalFacilityRoiService.getEntityById(m_r_id);
 //        log.info("model: " + facility);
-        ResponseDTO<NetworkOfCrackModel> response = ResponseDTO.<NetworkOfCrackModel>builder()
-                .uri(getUri(uri_crack_network))
+        ResponseDTO<ThreeDimensionalFacilityRoiModel> response = ResponseDTO.<ThreeDimensionalFacilityRoiModel>builder()
+                .uri(getUri(uri_model_roi))
                 .success(model != null)
                 .result(model)
                 .build();
@@ -106,18 +107,18 @@ public class NetworkOfCrackController {
     }
 
 
-    @PostMapping(uri_crack_networks)
-    public ResponseEntity<?> createNetworkOfCrack(
+    @PostMapping(uri_model_rois)
+    public ResponseEntity<?> createThreeDimensionalFacilityROI(
             @PathVariable String facility_id,
             @PathVariable String model_id,
-            @RequestBody NetworkOfCrackModel model) {
+            @RequestBody ThreeDimensionalFacilityRoiModel model) {
         if(!parsePathVariablesOfModel(facility_id,model_id))
             return ResponseEntity.badRequest().build();
 
-        NetworkOfCrackModel createdModel = networkOfCrackService.createEntity(model);
+        ThreeDimensionalFacilityRoiModel createdModel = threeDimensionalFacilityRoiService.createEntity(model);
         log.info("model: " + createdModel);
-        ResponseDTO<NetworkOfCrackModel> response = ResponseDTO.<NetworkOfCrackModel>builder()
-                .uri(getUri(uri_crack_networks))
+        ResponseDTO<ThreeDimensionalFacilityRoiModel> response = ResponseDTO.<ThreeDimensionalFacilityRoiModel>builder()
+                .uri(getUri(uri_model_rois))
                 .success(createdModel != null)
                 .result(createdModel)
                 .build();
@@ -125,20 +126,20 @@ public class NetworkOfCrackController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PutMapping(uri_crack_network)
-    public ResponseEntity<?> updateNetworkOfCrack(
+    @PutMapping(uri_model_roi)
+    public ResponseEntity<?> updateThreeDimensionalFacilityROI(
             @PathVariable String facility_id,
             @PathVariable String model_id,
-            @PathVariable String crack_network_id,
-            @RequestBody NetworkOfCrackModel model) {
+            @PathVariable String roi_id,
+            @RequestBody ThreeDimensionalFacilityRoiModel model) {
 
-        if(!parsePathVariablesOfNetworkOfCrack(facility_id,model_id,crack_network_id))
+        if(!parsePathVariablesOfModelRoi(facility_id,model_id,roi_id))
             return ResponseEntity.badRequest().build();
 
-        NetworkOfCrackModel updatedModel = networkOfCrackService.updateEntity(n_c_id, model);
+        ThreeDimensionalFacilityRoiModel updatedModel = threeDimensionalFacilityRoiService.updateEntity(m_r_id, model);
         log.info("model: " + updatedModel);
-        ResponseDTO<NetworkOfCrackModel> response = ResponseDTO.<NetworkOfCrackModel>builder()
-                .uri(getUri(uri_crack_network))
+        ResponseDTO<ThreeDimensionalFacilityRoiModel> response = ResponseDTO.<ThreeDimensionalFacilityRoiModel>builder()
+                .uri(getUri(uri_model_roi))
                 .success(updatedModel != null)
                 .result(updatedModel)
                 .build();
@@ -146,19 +147,19 @@ public class NetworkOfCrackController {
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping(uri_crack_network)
-    public ResponseEntity<?> deleteNetworkOfCrack(
+    @DeleteMapping(uri_model_roi)
+    public ResponseEntity<?> deleteThreeDimensionalFacilityROI(
             @PathVariable String facility_id,
             @PathVariable String model_id,
-            @PathVariable String crack_network_id) {
+            @PathVariable String roi_id) {
 
-        if(!parsePathVariablesOfNetworkOfCrack(facility_id,model_id,crack_network_id))
+        if(!parsePathVariablesOfModelRoi(facility_id,model_id,roi_id))
             return ResponseEntity.badRequest().build();
 
-        boolean deleted = networkOfCrackService.deleteEntity(n_c_id);
+        boolean deleted = threeDimensionalFacilityRoiService.deleteEntity(m_r_id);
         log.info("model: " + deleted);
         ResponseDTO<Boolean> response = ResponseDTO.<Boolean>builder()
-                .uri(getUri(uri_crack_network))
+                .uri(getUri(uri_model_roi))
                 .success(deleted)
                 .result(deleted)
                 .build();

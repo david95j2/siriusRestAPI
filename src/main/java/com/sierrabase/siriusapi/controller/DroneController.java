@@ -17,18 +17,17 @@ import java.util.ArrayList;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/drones")
+@RequestMapping("/api/drone-types")
 public class DroneController {
-    static private final String apiTag = "/api/drones";
+    static private final String apiTag = "/api/drone-types";
 
     @Autowired
     private DroneService droneService;
     @Autowired
     private DroneSystemLogService droneSystemLogService;
 
-    static private final String uri_types = "/types";
     static private final String uri_logs = "/logs";
-    static private final String uri_drone_type_id = uri_types + "/{drone_type_id}";
+    static private final String uri_drone_type_id = apiTag + "/{drone_type_id}";
     static private final String uri_drone_system_log_id = uri_logs + "/{drone_system_log_id}";
 
     private String getUri(final String methodName) {
@@ -45,12 +44,12 @@ public class DroneController {
 
 
     // GET - drone types
-    @GetMapping(uri_types)
+    @GetMapping()
     public ResponseEntity<?> getDroneTypes() {
         ArrayList<DroneTypeModel> droneTypeModelList = droneService.getAllEntities();
         log.info("model: " + droneTypeModelList);
         ResponseDTO<ArrayList<DroneTypeModel>> response = ResponseDTO.<ArrayList<DroneTypeModel>>builder()
-                .uri(getUri(uri_types))
+                .uri(apiTag)
                 .success(droneTypeModelList != null)
                 .result(droneTypeModelList)
                 .build();
@@ -78,13 +77,13 @@ public class DroneController {
     }
 
     // POST - a droneType
-    @PostMapping(uri_types)
+    @PostMapping()
     public ResponseEntity<?> createDroneType(
             @RequestBody DroneTypeModel droneTypeModel) {
         DroneTypeModel createdDroneType = droneService.createEntity(droneTypeModel);
         log.info("model: " + createdDroneType);
         ResponseDTO<DroneTypeModel> response = ResponseDTO.<DroneTypeModel>builder()
-                .uri(getUri(""))
+                .uri(apiTag)
                 .success(createdDroneType != null)
                 .result(createdDroneType)
                 .build();

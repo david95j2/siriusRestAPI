@@ -18,16 +18,16 @@ public class ThreeDimensionalFacilityEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "three_dimensional_facility_id", unique = true, nullable = false)
     private int three_dimensional_facility_id;
-    @Column(name = "three_dimensional_modeling_id")
-    private int three_dimensional_modeling_id;
-    @Column(name = "album_id")
-    private int album_id;
+    @Column(name = "facility_id")
+    private int facility_id;
     @Column(name = "three_dimensional_facility_url")
     private String three_dimensional_facility_url;
-    @Column(name = "type")
-    private int type;
-    @Column(name = "type_name")
-    private String type_name;
+    @Column(name = "elevation_status")
+    private String elevation_status;
+    @Column(name = "album_datetime")
+    private ZonedDateTime album_datetime;
+    @Column(name = "album_name")
+    private String album_name;
     @Column(name = "created_datetime")
     private ZonedDateTime created_datetime;
     @Column(name = "wr_datetime")
@@ -35,11 +35,11 @@ public class ThreeDimensionalFacilityEntity implements Serializable {
 
     public ThreeDimensionalFacilityEntity(final ThreeDimensionalFacilityModel model) {
         setThree_dimensional_facility_id(model.getId());
-        setThree_dimensional_modeling_id(model.getThreeDimensionalModelingId());
-        setAlbum_id(model.getAlbumId());
+        setFacility_id(model.getFacilityId());
         setThree_dimensional_facility_url(model.getThreeDimensionalFacilityUrl());
-        setType(model.getType());
-        setType_name(model.getTypeName());
+        setElevation_status(model.getElevationStatus());
+        setAlbum_datetime(model.getAlbumDatetime());
+        setAlbum_name(model.getAlbumName());
         setCreated_datetime(model.getCreatedDatetime());
     }
 
