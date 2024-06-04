@@ -1,20 +1,23 @@
-package com.sierrabase.siriusapi.service.modeling;
+package com.sierrabase.siriusapi.service.analysis;
 
 import com.sierrabase.siriusapi.common.URICreator;
 import com.sierrabase.siriusapi.config.FtpConfig;
-import com.sierrabase.siriusapi.entity.analysis.AnalysisCrackEntity;
+import com.sierrabase.siriusapi.entity.FacilityMapEntity;
+import com.sierrabase.siriusapi.entity.album.AlbumEntity;
+import com.sierrabase.siriusapi.entity.analysis.AnalysisElevationEntity;
 import com.sierrabase.siriusapi.entity.analysis.AnalysisEntity;
-import com.sierrabase.siriusapi.entity.modeling.NetworkOfCrackEntity;
-import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalModelEntity;
-import com.sierrabase.siriusapi.model.analysis.AnalysisCrackModel;
+import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityEntity;
+import com.sierrabase.siriusapi.entity.modeling.inspectionNetworkMapEntity;
+import com.sierrabase.siriusapi.model.FacilityMapModel;
+import com.sierrabase.siriusapi.model.analysis.AnalysisElevationModel;
 import com.sierrabase.siriusapi.model.analysis.AnalysisModel;
-import com.sierrabase.siriusapi.model.modeling.NetworkOfCrackModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalModel;
-import com.sierrabase.siriusapi.repository.analysis.AnalysisCrackEntityRepository;
+import com.sierrabase.siriusapi.model.modeling.InspectionNetworkMapModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityRoiModel;
+import com.sierrabase.siriusapi.repository.analysis.AnalysisElevationEntityRepository;
 import com.sierrabase.siriusapi.repository.analysis.AnalysisEntityRepository;
-import com.sierrabase.siriusapi.repository.modeling.NetworkOfCrackRepository;
-import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalModelRepository;
+import com.sierrabase.siriusapi.repository.modeling.InspectionNetworkMapEntityRepository;
+import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalFacilityRepository;
 import com.sierrabase.siriusapi.service.analysis.AnalysisService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -33,27 +36,27 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
-public class ElevationService {
+public class AnalysisElevationService {
 
     @Autowired
-    private ElevationWorker elevationWorker;
+    private AnalysisElevationWorker analysisElevationWorker;
     @Autowired
     private AnalysisEntityRepository analysisEntityRepository;
     @Autowired
-    private ThreeDimensionalModelRepository threeDimensionalModelRepository;
+    private AnalysisElevationEntityRepository analysisElevationEntityRepository;
     @Autowired
-    private AnalysisCrackEntityRepository analysisCrackEntityRepository;
+    private InspectionNetworkMapEntityRepository inspectionNetworkMapEntityRepository;
     @Autowired
-    private NetworkOfCrackRepository networkOfCrackRepository;
-    @Autowired
-    private ThreeDimensionalModelService threeDimensionalModelService;
+    private ThreeDimensionalFacilityRepository threeDimensionalFacilityRepository;
+
     @Autowired
     private AnalysisService analysisService;
     @Autowired
@@ -62,7 +65,65 @@ public class ElevationService {
     @Value("${path.repository.base}")
     private String repository_path;
 
-    public Boolean createElevationFiles(Integer modelId, ThreeDimensionalFacilityInfoModel model) {
+    public ArrayList<AnalysisElevationModel> getEntitiesByRoiId(Integer roiId) {
+        List<AnalysisElevationEntity> entities = analysisElevationEntityRepository.findAllByRoiId(roiId);
+
+        if (entities.size() <= 0)
+            return null;
+
+        ArrayList<AnalysisElevationModel> modelList = new ArrayList<AnalysisElevationModel>();
+        for (AnalysisElevationEntity entity : entities) {
+            modelList.add(new AnalysisElevationModel(entity));
+        }
+
+        return modelList;
+    }
+
+    public AnalysisElevationModel getEntityById(Integer id) {
+        Optional<AnalysisElevationEntity> entity = analysisElevationEntityRepository.findById(id);
+
+        log.debug("entity", entity);
+
+        if (!entity.isPresent())
+            return null;
+
+        AnalysisElevationModel model = new AnalysisElevationModel(entity.get());
+
+        return model;
+    }
+
+    public AnalysisElevationModel createEntity(AnalysisElevationModel model) {
+        AnalysisElevationEntity entity = new AnalysisElevationEntity(model);
+        // Set properties from analysisElevation to entity
+        entity = analysisElevationEntityRepository.save(entity);
+        return new AnalysisElevationModel(entity);
+    }
+
+    public AnalysisElevationModel updateEntity(Integer id, AnalysisElevationModel model) {
+        Optional<AnalysisElevationEntity> optionalEntity = analysisElevationEntityRepository.findById(id);
+        if (optionalEntity.isPresent()) {
+            AnalysisElevationEntity entity = optionalEntity.get();
+            // Update properties from analysisElevation to entity
+            entity = analysisElevationEntityRepository.save(new AnalysisElevationEntity(entity.getAnalysis_elevation_id(), model));
+            return new AnalysisElevationModel(entity);
+        } else {
+            log.error("Analysis elevation not found with id: {}", id);
+            return null;
+        }
+    }
+
+    public boolean deleteEntity(Integer id) {
+        Optional<AnalysisElevationEntity> optionalEntity = analysisElevationEntityRepository.findById(id);
+        if (optionalEntity.isPresent()) {
+            analysisElevationEntityRepository.deleteById(id);
+            return true;
+        } else {
+            log.error("Analysis elevation not found with id: {}", id);
+            return false;
+        }
+    }
+
+    public Boolean createElevationFiles(Integer modelId, ThreeDimensionalFacilityRoiModel model) {
         String basePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId));
 
         // 저장할 폴더 생성
@@ -78,7 +139,7 @@ public class ElevationService {
             return false;
         }
 
-        Boolean createElevationResult = elevationWorker.createElevation(basePath, model);
+        Boolean createElevationResult = analysisElevationWorker.createElevation(basePath, model);
         if (!createElevationResult) {
             log.error("Can not create Elevation");
             return false;
@@ -124,28 +185,21 @@ public class ElevationService {
         }
     }
 
-    public void createAnalysisCrack(Integer modelId, Integer modelInfoId, AnalysisModel model, ThreeDimensionalModel threeDimensionalModel) {
+    public void createAnalysisCrack(Integer modelId, Integer roiId, AnalysisModel analysisModel, ThreeDimensionalFacilityModel model) {
 //        ExecutorService executorService = Executors.newSingleThreadExecutor();
 //        executorService.execute(() -> {
-        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(modelInfoId));
+        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(roiId));
 //        String sourcePath = URICreator.pathToString(repository_path, "model", String.valueOf(modelId), "elevation", String.valueOf(modelInfoId));
         log.info("service sourcePath : " + sourcePath);
 
-        boolean result = elevationWorker.inferenceBySingleGpu(sourcePath);
+        boolean result = analysisElevationWorker.inferenceBySingleGpu(sourcePath);
         log.info("service result : " + result);
         String zipFilePath = URICreator.pathToString(repository_path,"model",String.valueOf(modelId),"elevation",modelId+".zip");
         log.info("zipFilePath : "+zipFilePath);
         boolean compressedResult = zipDirectory(sourcePath, zipFilePath);
-        if (compressedResult) {
-            String zipPath = zipFilePath;
-            AnalysisCrackModel analysisCrackModel = new AnalysisCrackModel(model.getAlbumId(), model.getId(),
-                    ftpConfig.getNginxUri() + zipPath.substring(zipPath.indexOf("/model")), 0);
-            AnalysisCrackEntity entity = new AnalysisCrackEntity(analysisCrackModel);
-            analysisCrackEntityRepository.save(entity);
-        }
+        log.info("compressed Result : "+compressedResult);
 
         if (result) {
-            log.info("완료");
             sourcePath = URICreator.pathToString(sourcePath, "analysis");
             File sourceFolder = Paths.get(sourcePath).toFile();
             File[] files = sourceFolder.listFiles();
@@ -161,38 +215,37 @@ public class ElevationService {
                                 crackCount = 0;
                             }
 
-                            AnalysisCrackModel analysisCrackModel = new AnalysisCrackModel(model.getAlbumId(), model.getId(),
+                            AnalysisElevationModel analysisElevationModel = new AnalysisElevationModel(analysisModel.getId(), roiId,
                                     ftpConfig.getNginxUri() + file.getPath().substring(file.getPath().indexOf("/model")), crackCount);
-                            AnalysisCrackEntity entity = new AnalysisCrackEntity(analysisCrackModel);
-                            analysisCrackEntityRepository.save(entity);
+                            AnalysisElevationEntity entity = new AnalysisElevationEntity(analysisElevationModel);
+                            analysisElevationEntityRepository.save(entity);
                         } catch (IOException e) {
                             log.error("Can not read elevation json :" + file.getPath());
                         }
                     }
                 }
             }
-            model.setStatus("Completed");
-            AnalysisEntity entity = new AnalysisEntity(model);
+            analysisModel.setStatus("Completed");
+            AnalysisEntity entity = new AnalysisEntity(analysisModel);
             analysisEntityRepository.save(entity);
-            threeDimensionalModel.setElevationStatus("Completed");
-            ThreeDimensionalModelEntity threeDimensionalModelEntity = new ThreeDimensionalModelEntity(threeDimensionalModel);
-            threeDimensionalModelRepository.save(threeDimensionalModelEntity);
+            model.setElevationStatus("Completed");
+            ThreeDimensionalFacilityEntity threeDimensionalFacilityEntity = new ThreeDimensionalFacilityEntity(model);
+            threeDimensionalFacilityRepository.save(threeDimensionalFacilityEntity);
 
-            NetworkOfCrackModel networkOfCrackModel = new NetworkOfCrackModel();
-            networkOfCrackModel.setThreeDimensionalModelId(threeDimensionalModel.getId());
-            networkOfCrackModel.setStatus("Waiting");
-            networkOfCrackModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
-            NetworkOfCrackEntity networkOfCrackEntity = new NetworkOfCrackEntity(networkOfCrackModel);
-            NetworkOfCrackEntity createdNetworkOfCrack = networkOfCrackRepository.save(networkOfCrackEntity);
+            InspectionNetworkMapModel inspectionNetworkMapModel = new InspectionNetworkMapModel();
+            inspectionNetworkMapModel.setStatus("Waiting");
+            inspectionNetworkMapModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
+            inspectionNetworkMapEntity inspectionNetworkMapEntity = new inspectionNetworkMapEntity(inspectionNetworkMapModel);
+            inspectionNetworkMapEntity createdNetworkOfCrack = inspectionNetworkMapEntityRepository.save(inspectionNetworkMapEntity);
             log.info("Created 균열망도 :" + createdNetworkOfCrack);
         } else {
             log.error("Error elevation inference");
-            model.setStatus("Error");
-            AnalysisEntity entity = new AnalysisEntity(model);
+            analysisModel.setStatus("Error");
+            AnalysisEntity entity = new AnalysisEntity(analysisModel);
             analysisEntityRepository.save(entity);
-            threeDimensionalModel.setElevationStatus("Error");
-            ThreeDimensionalModelEntity threeDimensionalModelEntity = new ThreeDimensionalModelEntity(threeDimensionalModel);
-            threeDimensionalModelRepository.save(threeDimensionalModelEntity);
+            model.setElevationStatus("Error");
+            ThreeDimensionalFacilityEntity threeDimensionalFacilityEntity = new ThreeDimensionalFacilityEntity(model);
+            threeDimensionalFacilityRepository.save(threeDimensionalFacilityEntity);
         }
 //        });
     }
@@ -233,53 +286,34 @@ public class ElevationService {
     }
 
 
-//    public boolean createElevation(Integer albumId, Integer modelId, ThreeDimensionalFacilityInfoModel model) {
-//        ExecutorService executorService = Executors.newSingleThreadExecutor();
-//        executorService.execute(() -> {
-//            ThreeDimensionalModel threeDimensionalModel = threeDimensionalModelService.getEntityById(modelId);
-//            threeDimensionalModel.setElevationStatus("Running");
-//            threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
-//
-//            Boolean result = createElevationFiles(modelId, model);
-//            if (!result) {
-//                log.error("Error create elevation");
-//                threeDimensionalModel.setElevationStatus("Error");
-//                threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
-//                return;
-//            }
-//
-//            AnalysisModel analysisModel = new AnalysisModel();
-//            analysisModel.setAlbumId(albumId);
-//            analysisModel.setName("elevation crack");
-//            analysisModel.setType(1);
-//            analysisModel.setTypeName("Segmentation");
-//            analysisModel.setStatus("Running");
-//            analysisModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
-//            AnalysisModel createdAnalysisModel = analysisService.createEntity(analysisModel);
-//
-//            log.info("Elevation analysis :" + createdAnalysisModel);
-//            createAnalysisCrack(modelId, model.getId(), createdAnalysisModel, threeDimensionalModel);
-//        });
-//        return true;
-//    }
-
     @Async("taskExecutor")
-    public void createElevation(Integer albumId, Integer modelId, ThreeDimensionalFacilityInfoModel model) {
+    public void createElevation(Integer modelId, ThreeDimensionalFacilityRoiModel model) {
         try {
-            ThreeDimensionalModel threeDimensionalModel = threeDimensionalModelService.getEntityById(modelId);
-            threeDimensionalModel.setElevationStatus("Running");
-            threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
+            Optional<ThreeDimensionalFacilityEntity> tdfEntity = threeDimensionalFacilityRepository.findById(modelId);
+            if(!tdfEntity.isPresent()) {
+                log.error("3D Facility Data Not Found in CreateElevation Service: "+modelId);
+                return;
+            }
+            Optional<AlbumEntity> albumEntity = threeDimensionalFacilityRepository.findByAlbumDateTime(tdfEntity.get().getAlbum_datetime());
+            if(!albumEntity.isPresent()) {
+                log.error("Album Data Not Found in CreateElevation Service: "+tdfEntity.get().getAlbum_datetime());
+                return;
+            }
+
+            ThreeDimensionalFacilityModel tdfModel = new ThreeDimensionalFacilityModel(tdfEntity.get());
+            tdfModel.setElevationStatus("Running");
+            threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(model.getThreeDimensionalFacilityId(), tdfModel));
 
             Boolean result = createElevationFiles(modelId, model);
             if (!result) {
                 log.error("Error creating elevation");
-                threeDimensionalModel.setElevationStatus("Error");
-                threeDimensionalModelService.updateEntity(threeDimensionalModel.getId(), threeDimensionalModel);
+                tdfModel.setElevationStatus("Error");
+                threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(model.getThreeDimensionalFacilityId(), tdfModel));
                 return;
             }
 
             AnalysisModel analysisModel = new AnalysisModel();
-            analysisModel.setAlbumId(albumId);
+            analysisModel.setAlbumId(albumEntity.get().getAlbum_id());
             analysisModel.setName("elevation crack");
             analysisModel.setType(1);
             analysisModel.setTypeName("Segmentation");
@@ -288,7 +322,7 @@ public class ElevationService {
             AnalysisModel createdAnalysisModel = analysisService.createEntity(analysisModel);
 
             log.info("Elevation analysis created: " + createdAnalysisModel);
-            createAnalysisCrack(modelId, model.getId(), createdAnalysisModel, threeDimensionalModel);
+            createAnalysisCrack(modelId, model.getId(), createdAnalysisModel, tdfModel);
         } catch (Exception e) {
             log.error("Exception in createElevation: ", e);
         }

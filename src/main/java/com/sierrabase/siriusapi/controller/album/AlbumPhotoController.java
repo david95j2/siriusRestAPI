@@ -55,7 +55,7 @@ public class AlbumPhotoController {
         if(!parsePathVariablesOfAlbum(album_id)) {
             ResponseEntity.badRequest().build();
         }
-
+        log.info("Test : "+a_id);
         ArrayList<AlbumPhotoPosModel> modelList = albumPhotoPosService.getAllEnitities(a_id);
 //        log.info("model: " + modelList);
         ResponseDTO<ArrayList<AlbumPhotoPosModel>> response = ResponseDTO.<ArrayList<AlbumPhotoPosModel>>builder()

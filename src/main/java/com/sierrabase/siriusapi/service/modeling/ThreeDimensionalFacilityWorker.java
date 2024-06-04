@@ -3,7 +3,6 @@ package com.sierrabase.siriusapi.service.modeling;
 import com.sierrabase.siriusapi.common.ExecuteScript;
 import com.sierrabase.siriusapi.common.URICreator;
 import com.sierrabase.siriusapi.config.FtpConfig;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +22,9 @@ public class ThreeDimensionalFacilityWorker {
     @Autowired
     private FtpConfig ftpConfig;
 
-    public boolean importModel(Integer albumId, String resourcePath) {
+    public boolean importModel(Integer modelId, String resourcePath) {
         String scriptPath = URICreator.pathToString(worker_path,"ftpClient.py");
-        String targetPath = URICreator.pathToString(repository_path,"album", String.valueOf(albumId),"3D_modeling");
+        String targetPath = URICreator.pathToString(repository_path,"model", String.valueOf(modelId));
         String[] runArgument = {ftpConfig.getWindowFtpServer(), ftpConfig.getWindowFtpPort(), ftpConfig.getWindowFtpUser(), ftpConfig.getWindowFtpPassword()
                 , "download",targetPath, resourcePath};
 
@@ -40,11 +39,10 @@ public class ThreeDimensionalFacilityWorker {
         return true;
     }
 
-    public boolean createGLTF(Integer albumId, Integer modelId) {
-        String sourcePath = URICreator.pathToString(repository_path,"album", String.valueOf(albumId),"3D_modeling");
-        String targetPath = URICreator.pathToString(repository_path,"model", String.valueOf(modelId));
+    public boolean createGLTF(String basePath) {
+        String sourcePath = URICreator.pathToString(basePath,"Data");
         String gltfRunPath = URICreator.pathToString(worker_path,"convert2glb.py");
-        String[] gltfArgument = {"--",sourcePath+"/Data","Tile",targetPath,"16"};
+        String[] gltfArgument = {"--",sourcePath,"Tile",basePath,"16"};
 
         try {
             int resultCode = ExecuteScript.executeShellScript("blender", "-b -P", gltfRunPath, gltfArgument);

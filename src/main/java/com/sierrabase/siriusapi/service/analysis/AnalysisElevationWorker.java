@@ -1,11 +1,9 @@
-package com.sierrabase.siriusapi.service.modeling;
+package com.sierrabase.siriusapi.service.analysis;
 
 import com.sierrabase.siriusapi.common.ExecuteScript;
 import com.sierrabase.siriusapi.common.URICreator;
-import com.sierrabase.siriusapi.config.FtpConfig;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityRoiModel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +11,12 @@ import java.io.IOException;
 
 @Slf4j
 @Service
-public class ElevationWorker {
+public class AnalysisElevationWorker {
 
     @Value("${path.worker.base}")
     private String worker_path;
 
-    public Boolean createElevation(String basePath, ThreeDimensionalFacilityInfoModel model) {
+    public Boolean createElevation(String basePath, ThreeDimensionalFacilityRoiModel model) {
         String scriptPath = URICreator.pathToString(worker_path,"modelCapture/build/GLBLoader");
         String sourcePath = URICreator.pathToString(basePath,"original_model.glb");
         String targetPath = URICreator.pathToString(basePath,"elevation", String.valueOf(model.getId()));

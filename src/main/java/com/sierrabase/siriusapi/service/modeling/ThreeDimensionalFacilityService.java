@@ -1,8 +1,9 @@
 package com.sierrabase.siriusapi.service.modeling;
 
 import com.sierrabase.siriusapi.common.URICreator;
+import com.sierrabase.siriusapi.config.FtpConfig;
 import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityEntity;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
+import com.sierrabase.siriusapi.model.SourceInfoModel;
 import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
 import com.sierrabase.siriusapi.repository.modeling.ThreeDimensionalFacilityRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,13 +25,14 @@ public class ThreeDimensionalFacilityService {
     private ThreeDimensionalFacilityRepository threeDimensionalFacilityRepository;
     @Autowired
     private ThreeDimensionalFacilityWorker threeDimensionalFacilityWorker;
-
+    @Autowired
+    private FtpConfig ftpConfig;
     @Value("${path.repository.base}")
     private String repository_path;
 
-    public ArrayList<ThreeDimensionalFacilityModel> getAllEntities(Integer albumId)  {
+    public ArrayList<ThreeDimensionalFacilityModel> getAllEntities(Integer facilityId)  {
 
-        List<ThreeDimensionalFacilityEntity> entities = threeDimensionalFacilityRepository.findAllByAlbumId(albumId);
+        List<ThreeDimensionalFacilityEntity> entities = threeDimensionalFacilityRepository.findAllByFacilityId(facilityId);
         if(entities.size() <= 0)
             return null;
 
@@ -87,4 +91,33 @@ public class ThreeDimensionalFacilityService {
         }
     }
 
+    public boolean importModel(Integer id, SourceInfoModel model) {
+        boolean importResult = threeDimensionalFacilityWorker.importModel(id, model.getUrl());
+        if (!importResult) {
+            log.error("Import model Error");
+        }
+        return true;
+    }
+
+    public boolean createGLTF(ThreeDimensionalFacilityModel model) {
+        String basePath = URICreator.pathToString(repository_path,"model", String.valueOf(model.getId()));
+        boolean createResult = threeDimensionalFacilityWorker.createGLTF(basePath);
+        if (!createResult) {
+            log.error("Can not create GLTF File");
+        }
+        log.info("create gltf success");
+        return true;
+    }
+
+    public String getElevationURL(Integer id) {
+        String targetPath = URICreator.pathToString(repository_path,"model",String.valueOf(id),"elevation",id+".zip");
+        Path path = Paths.get(targetPath);
+
+        if (Files.exists(path)) {
+            targetPath = URICreator.pathToString(ftpConfig.getNginxUri(),targetPath.substring(targetPath.indexOf("/model")));
+            return targetPath;
+        } else {
+            return null;
+        }
+    }
 }

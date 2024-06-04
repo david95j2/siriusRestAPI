@@ -62,6 +62,8 @@ public class AlbumController {
     public ResponseEntity<?> getAlbums(@RequestParam Optional<Integer> facility_id,
                                        @RequestParam Optional<Integer> facility_map_id) {
 
+        log.info("1? "+facility_id);
+        log.info("2?"+facility_map_id);
         ArrayList<AlbumModel> modelList = albumService.getByConditions(facility_id, facility_map_id);
         log.info("model: " + modelList);
         ResponseDTO<ArrayList<AlbumModel>> response = ResponseDTO.<ArrayList<AlbumModel>>builder()

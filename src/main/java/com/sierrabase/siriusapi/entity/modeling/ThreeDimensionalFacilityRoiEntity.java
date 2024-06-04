@@ -1,7 +1,6 @@
 package com.sierrabase.siriusapi.entity.modeling;
 
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityInfoModel;
-import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityModel;
+import com.sierrabase.siriusapi.model.modeling.ThreeDimensionalFacilityRoiModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,12 +15,12 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name="three_dimensional_facility_info")
-public class ThreeDimensionalFacilityInfoEntity implements Serializable {
+@Table(name="three_dimensional_facility_roi")
+public class ThreeDimensionalFacilityRoiEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "three_dimensional_facility_info_id", unique = true, nullable = false)
-    private int three_dimensional_facility_info_id;
+    @Column(name = "three_dimensional_facility_roi_id", unique = true, nullable = false)
+    private int three_dimensional_facility_roi_id;
     @Column(name = "three_dimensional_facility_id")
     private int three_dimensional_facility_id;
     @Column(name = "rotation")
@@ -47,8 +46,8 @@ public class ThreeDimensionalFacilityInfoEntity implements Serializable {
     @Column(name = "wr_datetime")
     private ZonedDateTime wr_datetime;
 
-    public ThreeDimensionalFacilityInfoEntity(final ThreeDimensionalFacilityInfoModel model) {
-        setThree_dimensional_facility_info_id(model.getId());
+    public ThreeDimensionalFacilityRoiEntity(final ThreeDimensionalFacilityRoiModel model) {
+        setThree_dimensional_facility_roi_id(model.getId());
         setThree_dimensional_facility_id(model.getThreeDimensionalFacilityId());
         setRotation(model.getRotation());
         setMin_height(model.getMinHeight());
@@ -62,8 +61,8 @@ public class ThreeDimensionalFacilityInfoEntity implements Serializable {
         setCreated_datetime(model.getCreatedDatetime());
     }
 
-    public ThreeDimensionalFacilityInfoEntity(final Integer id, final ThreeDimensionalFacilityInfoModel model) {
+    public ThreeDimensionalFacilityRoiEntity(final Integer id, final ThreeDimensionalFacilityRoiModel model) {
         this(model);
-        setThree_dimensional_facility_info_id(id);
+        setThree_dimensional_facility_roi_id(id);
     }
 }

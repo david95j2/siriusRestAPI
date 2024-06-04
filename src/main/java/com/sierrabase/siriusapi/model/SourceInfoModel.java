@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class SourceInfoModel {
     private String url;
+    private Integer albumId;
     private boolean isTopFolder;
     private boolean isExistOrigin;
     private boolean isExistAnalysis;

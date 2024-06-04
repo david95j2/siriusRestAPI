@@ -1,11 +1,6 @@
 package com.sierrabase.siriusapi.model.modeling;
 
-import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityEntity;
-import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityInfoEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.sierrabase.siriusapi.entity.modeling.ThreeDimensionalFacilityRoiEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +12,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ThreeDimensionalFacilityInfoModel {
+public class ThreeDimensionalFacilityRoiModel {
     private int id;
     private int threeDimensionalFacilityId;
     private int rotation;
@@ -32,8 +27,8 @@ public class ThreeDimensionalFacilityInfoModel {
     private ZonedDateTime createdDatetime;
     private ZonedDateTime wrDatetime;
 
-    public ThreeDimensionalFacilityInfoModel(final ThreeDimensionalFacilityInfoEntity entity) {
-        setId(entity.getThree_dimensional_facility_info_id());
+    public ThreeDimensionalFacilityRoiModel(final ThreeDimensionalFacilityRoiEntity entity) {
+        setId(entity.getThree_dimensional_facility_roi_id());
         setThreeDimensionalFacilityId(entity.getThree_dimensional_facility_id());
         setRotation(entity.getRotation());
         setMinHeight(entity.getMin_height());
