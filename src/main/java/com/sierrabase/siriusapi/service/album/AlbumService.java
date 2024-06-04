@@ -199,11 +199,18 @@ public class AlbumService {
         String nginxURI = ftpConfig.getNginxUri();
         String basePath = URICreator.pathToString(repository_path,"album",String.valueOf(albumId));
         String albumPath = URICreator.pathToString(basePath,"origin");
+        String analysisPath = URICreator.pathToString(basePath,"analysis");
+
         File[] pictures = new File(albumPath).listFiles();
+        File[] analysis = new File(analysisPath).listFiles();
         if (pictures==null) {
             log.error("there are no files");
         }
 
+        if (analysis!=null) {
+            sourceInfo.setExistAnalysis(true);
+        }
+        
         boolean isFirst = true;
         CameraModel createdCameraModel = null;
         AnalysisModel createdAnalysisModel = null;
