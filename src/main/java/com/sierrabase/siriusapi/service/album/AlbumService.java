@@ -246,6 +246,7 @@ public class AlbumService {
                     analysisModel.setStatus("Completed");
                     analysisModel.setCreatedDatetime(ZonedDateTime.now());
                     createdAnalysisModel = analysisService.createEntity(analysisModel);
+                    log.info("import album with analysis : "+createdAnalysisModel);
                 }
                 isFirst = false;
             }
@@ -264,7 +265,8 @@ public class AlbumService {
                 analysisCrackModel.setAnalysisType(1);
                 analysisCrackModel.setCracksInfoPath(jsonFilePath);
                 analysisCrackModel.setCreatedDatetime(ZonedDateTime.now());
-                analysisCrackService.createEntity(analysisCrackModel);
+                AnalysisCrackModel createdAnalysisCrackModel = analysisCrackService.createEntity(analysisCrackModel);
+                log.info("import album with analysis : "+createdAnalysisCrackModel);
             }
 
             albumPhotoPosService.createEntity(new AlbumPhotoPosModel(albumPhotoModel.getId(),

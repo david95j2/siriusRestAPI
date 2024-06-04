@@ -154,7 +154,7 @@ public class AlbumController {
             ResponseEntity.badRequest().build();
         }
 //        String localPath = Paths.get(repository_path, "album", String.valueOf(a_id)).toString();
-
+        log.info("import Album : "+model);
         boolean result = albumService.importAlbum(a_id, model);
 //        albumWorker = new AlbumWorker(album_id);
 //        albumWorker.loadAlbumImagesTo(albumRepository);
