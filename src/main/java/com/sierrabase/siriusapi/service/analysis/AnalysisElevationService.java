@@ -217,7 +217,9 @@ public class AnalysisElevationService {
 
                             AnalysisElevationModel analysisElevationModel = new AnalysisElevationModel(analysisModel.getId(), roiId,
                                     ftpConfig.getNginxUri() + file.getPath().substring(file.getPath().indexOf("/model")), crackCount);
+                            log.info("analysisElevation :"+analysisElevationModel);
                             AnalysisElevationEntity entity = new AnalysisElevationEntity(analysisElevationModel);
+                            log.info("created analysisElevation :"+entity);
                             analysisElevationEntityRepository.save(entity);
                         } catch (IOException e) {
                             log.error("Can not read elevation json :" + file.getPath());
@@ -233,6 +235,7 @@ public class AnalysisElevationService {
             threeDimensionalFacilityRepository.save(threeDimensionalFacilityEntity);
 
             InspectionNetworkMapModel inspectionNetworkMapModel = new InspectionNetworkMapModel();
+            inspectionNetworkMapModel.setThreeDimensionalFacilityId(model.getId());
             inspectionNetworkMapModel.setStatus("Waiting");
             inspectionNetworkMapModel.setCreatedDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
             inspectionNetworkMapEntity inspectionNetworkMapEntity = new inspectionNetworkMapEntity(inspectionNetworkMapModel);
