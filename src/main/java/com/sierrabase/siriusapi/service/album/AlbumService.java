@@ -311,10 +311,14 @@ public class AlbumService {
         Path analysisPath = URICreator.pathTopath(basePath,"analysis");
 
         albumResource.initialize(albumId);
-        albumResource.includeImagesOn(albumPath);
+        try {
+            albumResource.includeImagesOn(albumPath);
 
-        if (Files.exists(analysisPath)) {
-            albumResource.includeImagesOn(analysisPath);
+            if (Files.exists(analysisPath)) {
+                albumResource.includeImagesOn(analysisPath);
+            }
+        } finally {
+            albumResource.close();
         }
 
         String nginxUri = ftpConfig.getNginxUri();
