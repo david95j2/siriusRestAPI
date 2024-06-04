@@ -302,13 +302,13 @@ public class AnalysisElevationService {
 
             ThreeDimensionalFacilityModel tdfModel = new ThreeDimensionalFacilityModel(tdfEntity.get());
             tdfModel.setElevationStatus("Running");
-            threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(model.getThreeDimensionalFacilityId(), tdfModel));
+            threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(tdfModel.getId(), tdfModel));
 
             Boolean result = createElevationFiles(modelId, model);
             if (!result) {
                 log.error("Error creating elevation");
                 tdfModel.setElevationStatus("Error");
-                threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(model.getThreeDimensionalFacilityId(), tdfModel));
+                threeDimensionalFacilityRepository.save(new ThreeDimensionalFacilityEntity(tdfModel.getId(), tdfModel));
                 return;
             }
 
