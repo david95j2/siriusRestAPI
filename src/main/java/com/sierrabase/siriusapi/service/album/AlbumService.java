@@ -210,7 +210,7 @@ public class AlbumService {
         if (analysis!=null) {
             sourceInfo.setExistAnalysis(true);
         }
-        
+
         boolean isFirst = true;
         CameraModel createdCameraModel = null;
         AnalysisModel createdAnalysisModel = null;
@@ -253,7 +253,7 @@ public class AlbumService {
                     analysisModel.setStatus("Completed");
                     analysisModel.setCreatedDatetime(ZonedDateTime.now());
                     createdAnalysisModel = analysisService.createEntity(analysisModel);
-                    log.info("import album with analysis : "+createdAnalysisModel);
+//                    log.info("import album with analysis : "+createdAnalysisModel);
                 }
                 isFirst = false;
             }
@@ -273,7 +273,7 @@ public class AlbumService {
                 analysisCrackModel.setCracksInfoPath(jsonFilePath);
                 analysisCrackModel.setCreatedDatetime(ZonedDateTime.now());
                 AnalysisCrackModel createdAnalysisCrackModel = analysisCrackService.createEntity(analysisCrackModel);
-                log.info("import album with analysis : "+createdAnalysisCrackModel);
+//                log.info("import album with analysis : "+createdAnalysisCrackModel);
             }
 
             albumPhotoPosService.createEntity(new AlbumPhotoPosModel(albumPhotoModel.getId(),
